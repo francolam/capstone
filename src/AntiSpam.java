@@ -7,6 +7,7 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import java.net.InetAddress;
 import java.util.logging.Logger;
+import org.json.simple.JSONObject;
 
 // The Java class will be hosted at the URI path "/helloworld"
 @Path("/antispam")
@@ -16,7 +17,7 @@ public class AntiSpam {
 
     @POST
     @Path("/scoreText")
-    public SpamContentData.Result scoreTextContent(HttpServletRequest request,
+    public JSONObject scoreTextContent(HttpServletRequest request,
                                                    long memberId,
                                                    String textContent) {
         SpamContentData.Result result = SpamContentData.Result.HAM;
@@ -38,12 +39,14 @@ public class AntiSpam {
             Logger.getLogger(AntiSpam.class.getName()).severe(e.getMessage());
         }
 
-        return result;
+        JSONObject resultJson = new JSONObject();
+        resultJson.put("isSpam", result == SpamContentData.Result.SPAM);
+        return resultJson;
     }
 
     @POST
     @Path("/scoreImage")
-    public SpamContentData.Result scoreImageContent(HttpServletRequest request,
+    public JSONObject scoreImageContent(HttpServletRequest request,
                                                    long memberId,
                                                    String imagePath) {
         SpamContentData.Result result = SpamContentData.Result.HAM;
@@ -62,14 +65,16 @@ public class AntiSpam {
             Logger.getLogger(AntiSpam.class.getName()).severe(e.getMessage());
         }
 
-        return result;
+        JSONObject resultJson = new JSONObject();
+        resultJson.put("isSpam", result == SpamContentData.Result.SPAM);
+        return resultJson;
     }
 
     private void checkResult(SpamContentData.Result result, long memberId) {
-            CountingService countingService = new CountingService();
+            CountingDatastoreClient countingDatastoreClient = new CountingDatastoreClient();
             if (result == SpamContentData.Result.SPAM) {
-                countingService.count(memberId);
-                if (countingService.getCount(memberId) >= 10) {
+                countingDatastoreClient.count(memberId);
+                if (countingDatastoreClient.getCount(memberId) >= 10) {
                     // send a request to restriction service to restrict the member from using the message feature
                 }
             }

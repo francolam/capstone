@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 // A counting service to track how many times a member sent spam messages in one day
-public class CountingService {
+public class CountingDatastoreClient {
     Map<Long, Long> counter= new HashMap<>();
 
     public void count(long memberId) {
